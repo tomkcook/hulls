@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Form</class>
+ <widget class="QWidget" name="Form">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>300</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QFormLayout" name="formLayout">
+   <item row="0" column="0">
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>Number of stations</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1">
+    <widget class="QSpinBox" name="stations">
+     <property name="minimum">
+      <number>2</number>
+     </property>
+     <property name="value">
+      <number>12</number>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <widget class="QLabel" name="label_2">
+     <property name="text">
+      <string>Number of lines</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="1">
+    <widget class="QSpinBox" name="lines">
+     <property name="minimum">
+      <number>2</number>
+     </property>
+     <property name="value">
+      <number>2</number>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="label_6">
+     <property name="text">
+      <string>LOA</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="1">
+    <widget class="QDoubleSpinBox" name="loa">
+     <property name="suffix">
+      <string> mm</string>
+     </property>
+     <property name="minimum">
+      <double>1.000000000000000</double>
+     </property>
+     <property name="maximum">
+      <double>50000.000000000000000</double>
+     </property>
+     <property name="singleStep">
+      <double>100.000000000000000</double>
+     </property>
+     <property name="value">
+      <double>12000.000000000000000</double>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="0">
+    <widget class="QLabel" name="label_5">
+     <property name="text">
+      <string>Beam</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="1">
+    <widget class="QDoubleSpinBox" name="beam">
+     <property name="suffix">
+      <string> mm</string>
+     </property>
+     <property name="minimum">
+      <double>1.000000000000000</double>
+     </property>
+     <property name="maximum">
+      <double>15000.000000000000000</double>
+     </property>
+     <property name="singleStep">
+      <double>100.000000000000000</double>
+     </property>
+     <property name="value">
+      <double>4000.000000000000000</double>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="0">
+    <widget class="QLabel" name="label_3">
+     <property name="text">
+      <string>Closed ends</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="1">
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QCheckBox" name="closedFore">
+       <property name="text">
+        <string>Fore</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="closedAft">
+       <property name="text">
+        <string>Aft</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item row="5" column="0">
+    <widget class="QLabel" name="label_7">
+     <property name="text">
+      <string>Top form</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="1">
+    <widget class="QGroupBox" name="groupBox">
+     <property name="styleSheet">
+      <string notr="true">QGroupBox{padding-top:1em; margin-top:-1em}c</string>
+     </property>
+     <property name="title">
+      <string/>
+     </property>
+     <property name="flat">
+      <bool>true</bool>
+     </property>
+     <property name="checkable">
+      <bool>false</bool>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <property name="spacing">
+       <number>0</number>
+      </property>
+      <property name="leftMargin">
+       <number>9</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <item>
+       <widget class="QRadioButton" name="topFlat">
+        <property name="text">
+         <string>Flat</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QRadioButton" name="topSymmetrical">
+        <property name="text">
+         <string>Symmetrical</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
