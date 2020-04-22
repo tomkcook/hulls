@@ -3,16 +3,6 @@ from pivy import coin
 import math
 
 ui_path = os.path.join(os.path.dirname(__file__), 'hulls.ui')
-def SoFCSelection(obj, name):
-    s = coin.SoType.fromName("SoFCSelection").createInstance()
-    s.documentName.setValue(FreeCAD.ActiveDocument.Name)
-    s.objectName.setValue(obj.Object.Name)
-    s.subElementName.setValue(name)
-    return s
-
-def pairs(arr):
-    for ii in range(len(arr)-1):
-        yield (arr[ii], arr[ii+1])
 
 class NewHullPanel():
     def __init__(self):
