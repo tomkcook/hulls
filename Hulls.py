@@ -102,33 +102,38 @@ class HullViewProvider():
         for ii, data_row in enumerate(vertex_data):
             for jj, data_point in enumerate(data_row):
                 vertex = coin.SoSeparator()
-                t = coin.SoTranslation()
-                t.translation.setValue(data_point)
-                vertex += t
-                sphere = coin.SoSphere()
-                sphere.radius.setValue(50.0)
-                s = SoFCSelection(obj, 'vertex_{}_{}'.format(ii, jj))
-                s += sphere
+                coord = coin.SoCoordinate3()
+                coord.point.setValue(data_point)
+                s = coin.SoType.fromName("SoBrepPointSet").createInstance()
+                s.numPoints.setValue(1)
+                pointstyle = coin.SoDrawStyle()
+                pointstyle.style = coin.SoDrawStyle.POINTS
+                vertex += pointstyle
+                vertex += coord
                 vertex += s
                 vertexNet += vertex
 
         lines = coin.SoGroup()
         for ii, data_row in enumerate(vertex_data):
-            line = coin.SoLineSet()
-            prop = coin.SoVertexProperty()
-            prop.vertex.setValues(0, len(data_row), data_row)
-            line.vertexProperty = prop
-            s = SoFCSelection(obj, 'station{}'.format(ii))
-            s += line
-            lines += s
+            line = coin.SoSeparator()
+            coords = coin.SoCoordinate3()
+            coords.point.setValues(0, len(data_row), data_row)
+            lineSet = coin.SoType.fromName("SoBrepEdgeSet").createInstance()
+            lineSet.coordIndex.setValues(0, len(data_row), range(len(data_row)))
+            line += coords
+            line += lineSet
+            lines += line
 
         stations = coin.SoGroup()
         for ii in range(len(vertex_data[0])):
-            line = coin.SoLineSet()
-            prop = coin.SoVertexProperty()
-            coords = [vertex_data[jj][ii] for jj in range(len(vertex_data))]
-            prop.vertex.setValues(0, len(coords), coords)
-            line.vertexProperty = prop
+            line = coin.SoSeparator()
+            coord_data = [vertex_data[jj][ii] for jj in range(len(vertex_data))]
+            coords = coin.SoCoordinate3()
+            coords.point.setValues(0, len(coord_data), coord_data)
+            lineSet = coin.SoType.fromName("SoBrepEdgeSet").createInstance()
+            lineSet.coordIndex.setValues(0, len(coord_data), range(len(coord_data)))
+            line += coords
+            line += lineSet
             stations += line
 
         style = coin.SoDrawStyle()
