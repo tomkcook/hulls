@@ -41,8 +41,12 @@ class Hull():
         # self.Type = 'hull'
         obj.addProperty('App::PropertyLength', 'LOA', 'Hull', 'Length overall').LOA = 12000
 
-        obj.addProperty('App::PropertyPythonObject', 'Points', 'Hull', 'Net of points')
+        obj.addProperty('App::PropertyVectorList', 'Points', 'Hull', 'Net of points')
+        obj.addProperty('App::PropertyInteger', 'NetWidth', 'Hull', 'Number of lines + 2').NetWidth = lines + 2
+        obj.addProperty('App::PropertyInteger', 'NetLength', 'Hull', 'Number of stations').NetLength = stations
+        print('Setting points')
         obj.Points = self.initialGeom(LOA, beam, ends, symmetric, stations, lines)
+        print('Set')
         obj.Proxy = self
         HullViewProvider(obj.ViewObject)
 
@@ -54,16 +58,17 @@ class Hull():
         station_space = LOA / (stations - 1)
         vertices = [
             [
-                coin.SbVec3f(ii * station_space, r * math.cos(da * jj), r * math.sin(da * jj))
+                FreeCAD.Vector(ii * station_space, r * math.cos(da * jj), r * math.sin(da * jj))
                 for jj in range(lines + 2)
             ]
             for ii in range(stations)
         ]
         if ends[0]:
-            vertices[0] = [[0,0,0] for jj in range(lines+2)]
+            vertices[0] = [FreeCAD.Vector(0,0,0) for jj in range(lines+2)]
         if ends[1]:
             x = vertices[-1][0][0]
-            vertices[-1] = [[x,0,0] for jj in range(lines+2)]
+            vertices[-1] = [FreeCAD.Vector(x,0,0) for jj in range(lines+2)]
+        vertices = [v for row in vertices for v in row]
         return vertices
 
     def onChanged(self, fp, prop):
@@ -78,76 +83,65 @@ class HullViewProvider():
         obj.Proxy = self
 
     def attach(self, obj):
-        self.sphereColor = coin.SoBaseColor()
-        self.sphereColor.rgb.setValue(1.0, 0.0, 0.0)
-        self.lineColor = coin.SoBaseColor()
-        self.lineColor.rgb.setValue(1.0, 1.0, 0.0)
-        self.scale = coin.SoScale()
-        self.scale.scaleFactor.setValue(1.0, 1.0, 1.0)
         self.wireframe = coin.SoGroup()
-        self.shaded = coin.SoGroup()
+        self.shaded = coin.SoSeparator()
+        self.drawStyle = coin.SoDrawStyle()
+        self.drawStyle.pointSize.setValue(10)
+        self.drawStyle.style = coin.SoDrawStyle.LINES
+        self.pointMaterial = coin.SoMaterial()
+        self.pointMaterial.diffuseColor = (1.0, 0.0, 0.0)
+        self.shaded += self.drawStyle
+        self.shaded += self.pointMaterial
+        self.wireframe += self.drawStyle
+        self.wireframe += self.pointMaterial
 
-        vertexNet = coin.SoGroup()
         vertex_data = obj.Object.getPropertyByName('Points')
-        for ii, data_row in enumerate(vertex_data):
-            for jj, data_point in enumerate(data_row):
-                vertex = coin.SoSeparator()
-                coord = coin.SoCoordinate3()
-                coord.point.setValue(data_point)
-                s = coin.SoType.fromName("SoBrepPointSet").createInstance()
+        n = obj.Object.getPropertyByName('NetWidth')
+        m = obj.Object.getPropertyByName('NetLength')
+        coord = coin.SoCoordinate3()
+        coord.point.setValues(0, len(vertex_data), vertex_data)
+
+        for ii in range(n):
+            for jj in range(m):
+                sep = coin.SoSeparator()
+                sep += self.pointMaterial
+                p = vertex_data[ii * m + jj]
+                co = coin.SoCoordinate3()
+                co.point.setValue(p[0], p[1], p[2])
+                sep += co
+                s = coin.SoType.fromName('SoPointSet').createInstance()
                 s.numPoints.setValue(1)
-                pointstyle = coin.SoDrawStyle()
-                pointstyle.style = coin.SoDrawStyle.POINTS
-                vertex += pointstyle
-                vertex += coord
-                vertex += s
-                vertexNet += vertex
+                sep += s
+                self.shaded += sep
 
-        lines = coin.SoGroup()
-        for ii, data_row in enumerate(vertex_data):
-            line = coin.SoSeparator()
-            coords = coin.SoCoordinate3()
-            coords.point.setValues(0, len(data_row), data_row)
-            lineSet = coin.SoType.fromName("SoBrepEdgeSet").createInstance()
-            lineSet.coordIndex.setValues(0, len(data_row), range(len(data_row)))
-            line += coords
-            line += lineSet
-            lines += line
+        stations = coin.SoSeparator()
+        stations += coord
+        for ii in range(n):
+            sep = coin.SoSeparator()
+            indices = [ii + jj * n for jj in range(m)]
+            lineSet = coin.SoType.fromName('SoBrepEdgeSet').createInstance()
+            lineSet.coordIndex.setValues(0, len(indices), indices)
+            sep += lineSet
+            stations += sep
 
-        stations = coin.SoGroup()
-        for ii in range(len(vertex_data[0])):
-            line = coin.SoSeparator()
-            coord_data = [vertex_data[jj][ii] for jj in range(len(vertex_data))]
-            coords = coin.SoCoordinate3()
-            coords.point.setValues(0, len(coord_data), coord_data)
-            lineSet = coin.SoType.fromName("SoBrepEdgeSet").createInstance()
-            lineSet.coordIndex.setValues(0, len(coord_data), range(len(coord_data)))
-            line += coords
-            line += lineSet
-            stations += line
-
-        style = coin.SoDrawStyle()
-        style.style = coin.SoDrawStyle.LINES
-        self.wireframe += style
-        self.wireframe += self.scale
-        self.wireframe += self.sphereColor
-        self.wireframe += vertexNet
-        self.wireframe += self.lineColor
-        self.wireframe += lines
-        self.wireframe += stations
-        obj.addDisplayMode(self.wireframe, 'Wireframe')
-
-        self.shaded += self.scale
-        self.shaded += self.sphereColor
-        self.shaded += vertexNet
-        self.shaded += self.lineColor
-        self.shaded += lines
         self.shaded += stations
+        self.wireframe += stations
+
+        lines = coin.SoSeparator()
+        lines += coord
+        for jj in range(m):
+            indices = [ii + jj * n for ii in range(n)]
+            lineSet = coin.SoType.fromName('SoBrepEdgeSet').createInstance()
+            lineSet.coordIndex.setValues(0, len(indices), indices)
+            lines += lineSet
+
+        self.shaded += lines
+        self.wireframe += lines
+
+        obj.addDisplayMode(self.wireframe, 'Wireframe')
         obj.addDisplayMode(self.shaded, 'Shaded')
-        vertex_data[1][0].setValue(100, 5000, -600)
 
     def updateData(self, fp, prop):
-        self.scale.scaleFactor.setValue(1.0, 1.0, 1.0)
         pass
 
     def getDisplayModes(self, obj):
